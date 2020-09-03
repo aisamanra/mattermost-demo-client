@@ -41,6 +41,7 @@ module Matterhorn.Types
   , ciPort
   , ciUrlPath
   , ciUsername
+  , ciToken
   , ciPassword
   , ciType
   , ciAccessToken
@@ -704,6 +705,7 @@ data ConnectionInfo =
                    , _ciPort     :: Int
                    , _ciUrlPath  :: Text
                    , _ciUsername :: Text
+                   , _ciToken    :: Text
                    , _ciPassword :: Text
                    , _ciAccessToken :: Text
                    , _ciType     :: ConnectionType
