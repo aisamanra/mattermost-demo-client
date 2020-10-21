@@ -48,6 +48,7 @@ where
 import           Prelude ()
 import           Matterhorn.Prelude
 
+import qualified Data.Foldable as F
 import qualified Data.Map.Strict as Map
 import qualified Data.Sequence as Seq
 import qualified Data.Text as T
@@ -59,7 +60,7 @@ import           Network.Mattermost.Lenses
 import           Network.Mattermost.Types
 
 import           Matterhorn.Types.Common
-import           Matterhorn.Types.RichText ( RichTextBlock(Blockquote), parseMarkdown
+import           Matterhorn.Types.RichText ( Doc(Blockquote), parseMarkdown
                                            , TeamBaseURL
                                            )
 
@@ -112,7 +113,7 @@ makeLenses ''ClientMessage
 --   the Mattermost 'Post' type, with unnecessary information
 --   removed and some preprocessing done.
 data ClientPost = ClientPost
-  { _cpText          :: Seq RichTextBlock
+  { _cpText          :: Doc
   , _cpMarkdownSource :: Text
   , _cpUser          :: Maybe UserId
   , _cpUserOverride  :: Maybe Text
@@ -196,7 +197,7 @@ unEmote _ t = t
 toClientPost :: TeamBaseURL -> Post -> Maybe PostId -> ClientPost
 toClientPost baseUrl p parentId =
   let src = unEmote (postClientPostType p) $ sanitizeUserText $ postMessage p
-  in ClientPost { _cpText          = parseMarkdown (Just baseUrl) src <> getAttachmentText p
+  in ClientPost { _cpText          = parseMarkdown src <> getAttachmentText p
                 , _cpMarkdownSource = src
                 , _cpUser          = postUserId p
                 , _cpUserOverride  = p^.postPropsL.postPropsOverrideUsernameL
@@ -216,14 +217,14 @@ toClientPost baseUrl p parentId =
 
 -- | Right now, instead of treating 'attachment' properties specially, we're
 --   just going to roll them directly into the message text
-getAttachmentText :: Post -> Seq RichTextBlock
+getAttachmentText :: Post -> Doc
 getAttachmentText p =
   case p^.postPropsL.postPropsAttachmentsL of
-    Nothing -> Seq.empty
+    Nothing -> mempty
     Just attachments ->
-      fmap (Blockquote . render) attachments
-  where render att = parseMarkdown Nothing (att^.ppaTextL) <>
-                     parseMarkdown Nothing (att^.ppaFallbackL)
+      mconcat $ F.toList $ fmap (Blockquote . render) attachments
+  where render att = parseMarkdown (att^.ppaTextL) <>
+                     parseMarkdown (att^.ppaFallbackL)
 
 -- ** 'ClientPost' Lenses
 

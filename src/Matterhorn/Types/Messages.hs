@@ -124,9 +124,9 @@ import           Network.Mattermost.Types ( ChannelId, PostId, Post
 
 import           Matterhorn.Types.DirectionalSeq
 import           Matterhorn.Types.Posts
-import           Matterhorn.Types.RichText ( RichTextBlock(..), Element(..)
-                                , ElementData(..), findUsernames, blockGetURLs
-                                , ElementStyle(..), URL(..), parseMarkdown
+import           Matterhorn.Types.RichText ( Doc(..), Element(..)
+                                , Element(..), findUsernames, docGetURLs
+                                , URL(..), parseMarkdown
                                 , TeamURLName
                                 )
 
@@ -157,7 +157,7 @@ messageIdPostId _ = Nothing
 -- | A 'Message' is any message we might want to render, either from
 --   Mattermost itself or from a client-internal source.
 data Message = Message
-  { _mText          :: Seq RichTextBlock
+  { _mText          :: Doc
   , _mMarkdownSource :: Text
   , _mUser          :: UserRef
   , _mDate          :: ServerTime
@@ -294,7 +294,7 @@ data LinkTarget =
 data LinkChoice =
     LinkChoice { _linkTime   :: ServerTime
                , _linkUser   :: UserRef
-               , _linkLabel  :: Maybe (Seq Element)
+               , _linkLabel  :: Element
                , _linkTarget :: LinkTarget
                } deriving (Eq, Show)
 
@@ -306,7 +306,7 @@ makeLenses ''LinkChoice
 -- associated with passing a link to the local browser.
 clientMessageToMessage :: ClientMessage -> Message
 clientMessageToMessage cm = Message
-  { _mText          = parseMarkdown Nothing (cm^.cmText)
+  { _mText          = parseMarkdown (cm^.cmText)
   , _mMarkdownSource = cm^.cmText
   , _mUser          = NoUser
   , _mDate          = cm^.cmDate
@@ -368,7 +368,7 @@ clientPostToMessage cp = (m, mentions)
 
 newMessageOfType :: Text -> MessageType -> ServerTime -> Message
 newMessageOfType text typ d = Message
-  { _mText         = parseMarkdown Nothing text
+  { _mText         = parseMarkdown text
   , _mMarkdownSource = text
   , _mUser         = NoUser
   , _mDate         = d
@@ -734,17 +734,17 @@ msgURLs msg =
       mkTarget (Right url) = LinkURL url
       mkTarget (Left (tName, pId)) = LinkPermalink tName pId
       mkEntry (val, text) = LinkChoice (msg^.mDate) uRef text (mkTarget val)
-      msgUrls = mkEntry <$> (Seq.fromList $ mconcat $ blockGetURLs <$> (toList $ msg^.mText))
+      msgUrls = Seq.fromList $ mkEntry <$> docGetURLs (msg^.mText)
       attachmentURLs = (\ a ->
                           LinkChoice
                             (msg^.mDate)
                             uRef
-                            (Just $ attachmentLabel a)
+                            (attachmentLabel a)
                             (LinkFileId $ a^.attachmentFileId))
                        <$> (msg^.mAttachments)
       attachmentLabel a =
-          Seq.fromList [ Element Normal $ EText "attachment"
-                       , Element Normal ESpace
-                       , Element Code $ EText $ a^.attachmentName
-                       ]
+          ESeq $ Seq.fromList [ EText "attachment"
+                              , ESpace
+                              , ECode $ a^.attachmentName
+                              ]
   in msgUrls <> attachmentURLs
