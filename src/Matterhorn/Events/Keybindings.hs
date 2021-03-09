@@ -9,13 +9,13 @@ module Matterhorn.Events.Keybindings
 
   , handleKeyboardEvent
 
+  -- Re-exports:
   , EventHandler(..)
   , KeyHandler(..)
   , KeyEventHandler(..)
   , KeyEventTrigger(..)
   , KeyHandlerMap(..)
 
-  -- Re-exports:
   , KeyEvent (..)
   , KeyConfig
   , allEvents
@@ -37,43 +37,6 @@ import qualified Graphics.Vty as Vty
 import           Matterhorn.Types
 import           Matterhorn.Types.KeyEvents
 
-
--- * Keybindings
-
--- | An 'EventHandler' represents a event handler.
-data EventHandler =
-    EH { ehDescription :: Text
-       -- ^ The description of this handler's behavior.
-       , ehAction :: MH ()
-       -- ^ The action to take when this handler is invoked.
-       }
-
--- | A trigger for a key event.
-data KeyEventTrigger =
-    Static Vty.Event
-    -- ^ The key event is always triggered by a specific key.
-    | ByEvent KeyEvent
-    -- ^ The key event is always triggered by an abstract key event (and
-    -- thus configured to be bound to specific key(s) in the KeyConfig).
-    deriving (Show, Eq, Ord)
-
--- | A handler for an abstract key event.
-data KeyEventHandler =
-    KEH { kehHandler :: EventHandler
-        -- ^ The handler to invoke.
-        , kehEventTrigger :: KeyEventTrigger
-        -- ^ The trigger for the handler.
-        }
-
--- | A handler for a specific key.
-data KeyHandler =
-    KH { khHandler :: KeyEventHandler
-       -- ^ The handler to invoke.
-       , khKey :: Vty.Event
-       -- ^ The specific key that should trigger this handler.
-       }
-
-newtype KeyHandlerMap = KeyHandlerMap (M.Map Vty.Event KeyHandler)
 
 -- | Find a keybinding that matches a Vty Event
 lookupKeybinding :: Vty.Event -> KeyHandlerMap -> Maybe KeyHandler

@@ -24,7 +24,7 @@ import qualified Graphics.Vty as Vty
 import           Matterhorn.Types
 import           Matterhorn.State.Common
 import           Matterhorn.State.Editing ( editingKeybindings )
-import           Matterhorn.Events.Keybindings ( KeyConfig, KeyHandlerMap, handleKeyboardEvent )
+import           Matterhorn.Events.Keybindings ( KeyConfig, handleKeyboardEvent )
 
 
 -- | Activate the specified list overlay's selected item by invoking the

@@ -5,6 +5,7 @@ module Matterhorn.Command
   , dispatchCommand
   , printArgSpec
   , toggleMessagePreview
+  , keybindSections
   )
 where
 
@@ -22,7 +23,9 @@ import qualified Network.Mattermost.Exceptions as MM
 import qualified Network.Mattermost.Types as MM
 
 import           Matterhorn.Connection ( connectWebsockets )
-import           Matterhorn.Constants ( userSigil, normalChannelSigil )
+import           Matterhorn.Constants ( userSigil )
+import {-# SOURCE #-} Matterhorn.Draw.ShowHelp ( keybindSections )
+import           Matterhorn.Help
 import           Matterhorn.HelpTopics
 import           Matterhorn.Scripts
 import           Matterhorn.State.Help
@@ -58,18 +61,6 @@ unwordHead t =
   in if T.null w
        then Nothing
        else Just (w, T.dropWhile Char.isSpace rs)
-
-printArgSpec :: CmdArgs a -> Text
-printArgSpec NoArg = ""
-printArgSpec (LineArg ts) = "<" <> ts <> ">"
-printArgSpec (TokenArg t NoArg) = "<" <> t <> ">"
-printArgSpec (UserArg rs) = "<" <> userSigil <> "user>" <> addSpace (printArgSpec rs)
-printArgSpec (ChannelArg rs) = "<" <> normalChannelSigil <> "channel>" <> addSpace (printArgSpec rs)
-printArgSpec (TokenArg t rs) = "<" <> t <> ">" <> addSpace (printArgSpec rs)
-
-addSpace :: Text -> Text
-addSpace "" = ""
-addSpace t = " " <> t
 
 matchArgs :: CmdArgs a -> Text -> Either Text a
 matchArgs NoArg t = case unwordHead t of
@@ -233,6 +224,9 @@ commandList =
 
   , Cmd "help" "Show the main help screen" NoArg $ \ _ ->
         showHelpScreen mainHelpTopic
+
+  , Cmd "help-browser" "Show Matterhorn help in your browser" NoArg $ \ _ ->
+        showHelpBrowser (helpPandoc commandList keybindSections)
 
   , Cmd "shortcuts" "Show keyboard shortcuts" NoArg $ \ _ ->
         showHelpScreen mainHelpTopic

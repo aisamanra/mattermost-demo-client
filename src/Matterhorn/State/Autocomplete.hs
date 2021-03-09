@@ -26,7 +26,7 @@ import           Network.Mattermost.Types (userId, channelId, Command(..), TeamI
 import qualified Network.Mattermost.Endpoints as MM
 
 import           Matterhorn.Constants ( userSigil, normalChannelSigil )
-import {-# SOURCE #-} Matterhorn.Command ( commandList, printArgSpec )
+import {-# SOURCE #-} Matterhorn.Command ( commandList )
 import           Matterhorn.State.Common
 import {-# SOURCE #-} Matterhorn.State.Editing ( Direction(..), tabComplete )
 import           Matterhorn.Types hiding ( newState )

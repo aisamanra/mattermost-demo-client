@@ -2,6 +2,7 @@ module Matterhorn.Draw.ShowHelp
   ( drawShowHelp
   , keybindingMarkdownTable
   , keybindingTextTable
+  , keybindSections
   , commandTextTable
   , commandMarkdownTable
   )
