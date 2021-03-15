@@ -2,7 +2,6 @@ module Matterhorn.Draw.ShowHelp
   ( drawShowHelp
   , keybindingMarkdownTable
   , keybindingTextTable
-  , keybindSections
   , commandTextTable
   , commandMarkdownTable
   )
@@ -18,30 +17,15 @@ import           Brick.Widgets.List ( listSelectedFocusedAttr )
 import qualified Data.Map as M
 import qualified Data.Text as T
 import qualified Graphics.Vty as Vty
-import           Lens.Micro.Platform ( singular, _Just, _2 )
 
 import           Network.Mattermost.Version ( mmApiVersion )
 
 import           Matterhorn.Command
 import           Matterhorn.Events
-import           Matterhorn.Events.ChannelSelect
 import           Matterhorn.Events.Keybindings
-import           Matterhorn.Events.Main
-import           Matterhorn.Events.MessageSelect
-import           Matterhorn.Events.ThemeListOverlay
-import           Matterhorn.Events.PostListOverlay
-import           Matterhorn.Events.ShowHelp
-import           Matterhorn.Events.UrlSelect
-import           Matterhorn.Events.UserListOverlay
-import           Matterhorn.Events.ChannelListOverlay
-import           Matterhorn.Events.ReactionEmojiListOverlay
-import           Matterhorn.Events.ManageAttachments
-import           Matterhorn.Events.TabbedWindow
-import           Matterhorn.Windows.ViewMessage
 import           Matterhorn.HelpTopics ( helpTopics )
 import           Matterhorn.Draw.RichText ( renderText )
 import           Matterhorn.Options ( mhVersion )
-import           Matterhorn.State.Editing ( editingKeyHandlers )
 import           Matterhorn.Themes
 import           Matterhorn.Types
 import           Matterhorn.Types.KeyEvents ( BindingState(..), Binding(..)
@@ -438,27 +422,6 @@ themeHelp = vBox
                  ]
     in vBox $ mkEntry <$> names
   ]
-
-keybindSections :: [(Text, [KeyEventHandler])]
-keybindSections =
-    [ ("Global Keybindings", globalKeyHandlers)
-    , ("Help Page", helpKeyHandlers)
-    , ("Main Interface", mainKeyHandlers)
-    , ("Text Editing", editingKeyHandlers (csCurrentTeam.tsEditState.cedEditor))
-    , ("Channel Select Mode", channelSelectKeyHandlers)
-    , ("Message Select Mode", messageSelectKeyHandlers)
-    , ("User Listings", userListOverlayKeyHandlers)
-    , ("URL Select Mode", urlSelectKeyHandlers)
-    , ("Theme List Window", themeListOverlayKeyHandlers)
-    , ("Channel Search Window", channelListOverlayKeyHandlers)
-    , ("Message Viewer: Common", tabbedWindowKeyHandlers (csCurrentTeam.tsViewedMessage.singular _Just._2))
-    , ("Message Viewer: Message tab", viewMessageKeyHandlers)
-    , ("Message Viewer: Reactions tab", viewMessageReactionsKeyHandlers)
-    , ("Attachment List", attachmentListKeyHandlers)
-    , ("Attachment File Browser", attachmentBrowseKeyHandlers)
-    , ("Flagged Messages", postListOverlayKeyHandlers)
-    , ("Reaction Emoji Search Window", reactionEmojiListOverlayKeyHandlers)
-    ]
 
 helpBox :: Name -> Widget Name -> Widget Name
 helpBox n helpText =

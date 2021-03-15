@@ -4,18 +4,15 @@ module Matterhorn.Command
   ( commandList
   , dispatchCommand
   , printArgSpec
-  , toggleMessagePreview
   )
 where
 
 import           Prelude ()
 import           Matterhorn.Prelude
 
-import           Brick.Main ( invalidateCache )
 import qualified Control.Exception as Exn
 import qualified Data.Char as Char
 import qualified Data.Text as T
-import           Lens.Micro.Platform ( (%=) )
 
 import qualified Network.Mattermost.Endpoints as MM
 import qualified Network.Mattermost.Exceptions as MM
@@ -23,11 +20,9 @@ import qualified Network.Mattermost.Types as MM
 
 import           Matterhorn.Connection ( connectWebsockets )
 import           Matterhorn.Constants ( userSigil )
-import {-# SOURCE #-} Matterhorn.Draw.ShowHelp ( keybindSections )
-import           Matterhorn.Help
 import           Matterhorn.HelpTopics
 import           Matterhorn.Scripts
-import           Matterhorn.State.Help
+import           Matterhorn.State.Help ( showHelpScreen, showHelpBrowser )
 import           Matterhorn.State.Editing
 import           Matterhorn.State.ChannelList
 import           Matterhorn.State.Channels
@@ -225,7 +220,7 @@ commandList =
         showHelpScreen mainHelpTopic
 
   , Cmd "help-browser" "Show Matterhorn help in your browser" NoArg $ \ _ ->
-        showHelpBrowser (helpPandoc commandList keybindSections)
+        showHelpBrowser
 
   , Cmd "shortcuts" "Show keyboard shortcuts" NoArg $ \ _ ->
         showHelpScreen mainHelpTopic
@@ -338,8 +333,3 @@ dispatchCommand cmd =
                 Left e -> go (e:errs) cs
                 Right args -> exe args
     _ -> return ()
-
-toggleMessagePreview :: MH ()
-toggleMessagePreview = do
-    mh invalidateCache
-    csResources.crConfiguration.configShowMessagePreviewL %= not

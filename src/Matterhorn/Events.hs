@@ -2,6 +2,7 @@ module Matterhorn.Events
   ( onEvent
   , globalKeybindings
   , globalKeyHandlers
+  , keybindSections
   )
 where
 
@@ -22,9 +23,11 @@ import           Matterhorn.HelpTopics
 import           Matterhorn.State.ChannelList
 import           Matterhorn.State.Channels
 import           Matterhorn.State.Common
-import           Matterhorn.State.Help
+import           Matterhorn.State.Editing ( editingKeyHandlers )
+import {-# SOURCE #-} Matterhorn.State.Help ( showHelpScreen )
 import           Matterhorn.State.Messages
 import           Matterhorn.Types
+import           Matterhorn.Windows.ViewMessage
 
 import           Matterhorn.Events.ChannelSelect
 import           Matterhorn.Events.ChannelTopicWindow
@@ -225,3 +228,24 @@ refreshClientConfig = do
         return $ Just $ do
             csClientConfig .= Just cfg
             updateSidebar Nothing
+
+keybindSections :: [(Text, [KeyEventHandler])]
+keybindSections =
+    [ ("Global Keybindings", globalKeyHandlers)
+    , ("Help Page", helpKeyHandlers)
+    , ("Main Interface", mainKeyHandlers)
+    , ("Text Editing", editingKeyHandlers (csCurrentTeam.tsEditState.cedEditor))
+    , ("Channel Select Mode", channelSelectKeyHandlers)
+    , ("Message Select Mode", messageSelectKeyHandlers)
+    , ("User Listings", userListOverlayKeyHandlers)
+    , ("URL Select Mode", urlSelectKeyHandlers)
+    , ("Theme List Window", themeListOverlayKeyHandlers)
+    , ("Channel Search Window", channelListOverlayKeyHandlers)
+    , ("Message Viewer: Common", tabbedWindowKeyHandlers (csCurrentTeam.tsViewedMessage.singular _Just._2))
+    , ("Message Viewer: Message tab", viewMessageKeyHandlers)
+    , ("Message Viewer: Reactions tab", viewMessageReactionsKeyHandlers)
+    , ("Attachment List", attachmentListKeyHandlers)
+    , ("Attachment File Browser", attachmentBrowseKeyHandlers)
+    , ("Flagged Messages", postListOverlayKeyHandlers)
+    , ("Reaction Emoji Search Window", reactionEmojiListOverlayKeyHandlers)
+    ]

@@ -284,6 +284,7 @@ module Matterhorn.Types
   , withLogContext
   , withLogContextChannelId
   , getLogContext
+  , toggleMessagePreview
   , LogMessage(..)
   , LogCommand(..)
   , LogCategory(..)
@@ -1944,6 +1945,12 @@ makeLenses ''UserPreferences
 makeLenses ''ConnectionInfo
 makeLenses ''ChannelTopicDialogState
 Brick.suffixLenses ''Config
+
+-- | Toggles message editing preview.
+toggleMessagePreview :: MH ()
+toggleMessagePreview = do
+    mh invalidateCache
+    csResources.crConfiguration.configShowMessagePreviewL %= not
 
 applyTeamOrderPref :: Maybe [TeamId] -> ChatState -> ChatState
 applyTeamOrderPref Nothing st = st

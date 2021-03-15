@@ -11,7 +11,10 @@ import           Matterhorn.Prelude
 
 import           Brick.Main ( viewportScroll, vScrollToBeginning )
 
+import {-# SOURCE #-} Matterhorn.Command ( commandList )
+import           Matterhorn.Events ( keybindSections )
 import           Matterhorn.FilePaths
+import           Matterhorn.Help
 import           Matterhorn.State.Links
 import           Matterhorn.Types
 import           Matterhorn.Types.KeyEvents
@@ -39,13 +42,13 @@ showHelpScreen topic = do
             mh $ vScrollToBeginning (viewportScroll HelpViewport)
             setMode $ ShowHelp topic curMode
 
-showHelpBrowser :: (KeyConfig -> Pandoc) -> MH ()
-showHelpBrowser helpPandoc = do
+showHelpBrowser' :: (KeyConfig -> Pandoc) -> MH ()
+showHelpBrowser' mkPandoc = do
   docsPath <- liftIO docsHtmlFilePath
   docsExist <- liftIO $ doesFileExist docsPath
   kc <- use (csResources.crConfiguration.configUserKeysL)
   when (not docsExist) $ do
-    html' <- liftIO $ runIOorExplode $ writeHtml4String opts (helpPandoc kc)
+    html' <- liftIO $ runIOorExplode $ writeHtml4String opts (mkPandoc kc)
     html <- liftIO $ runIOorExplode $ makeSelfContained html'
     liftIO $ writeFile docsPath (unpack html)
 
@@ -55,6 +58,9 @@ showHelpBrowser helpPandoc = do
   where opts = def { writerTableOfContents = True
                    , writerNumberSections = True
                    }
+
+showHelpBrowser :: MH ()
+showHelpBrowser = showHelpBrowser' (helpPandoc commandList keybindSections)
 
 docsHtmlFileName :: FilePath
 docsHtmlFileName = "matterhorn_docs_" ++ showVersion version ++ ".html"

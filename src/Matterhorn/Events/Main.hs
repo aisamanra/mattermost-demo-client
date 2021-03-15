@@ -7,7 +7,6 @@ import           Matterhorn.Prelude
 import           Brick.Widgets.Edit
 import qualified Graphics.Vty as Vty
 
-import           Matterhorn.Command
 import           Matterhorn.Events.Keybindings
 import           Matterhorn.State.Attachments
 import           Matterhorn.State.ChannelSelect
