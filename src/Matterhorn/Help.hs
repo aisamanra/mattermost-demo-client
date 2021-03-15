@@ -10,7 +10,7 @@ where
 import Prelude ()
 import Matterhorn.Prelude
 
-import Matterhorn.Events.Keybindings ( defaultBindings )
+import Matterhorn.Events.Keybindings
 import Matterhorn.Types
 import Matterhorn.Types.KeyEvents
 
