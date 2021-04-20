@@ -87,7 +87,7 @@ import           Matterhorn.Types ( ConnectionInfo(..)
                        , ciPassword, ciUsername, ciHostname, ciUrlPath
                        , ciPort, ciType, AuthenticationException(..)
                        , LogManager, LogCategory(..), ioLogWithManager
-                       , ciAccessToken
+                       , ciAccessToken, ciToken
                        )
 
 
@@ -96,6 +96,7 @@ data Name =
       Server
     | Username
     | Password
+    | OtpToken
     | AccessToken
     deriving (Ord, Eq, Show)
 
@@ -193,10 +194,10 @@ loginWorker setLogger logMgr requestChan respChan = forever $ do
                 do writeBChan respChan $ LoginResult $ AttemptFailed $ OtherAuthError e
               Right (cd_, mbTeam) -> do
                   let cd = setLogger cd_
-                      token = connInfo^.ciAccessToken
-                  case T.null token of
+                      accessToken = connInfo^.ciAccessToken
+                  case T.null accessToken of
                       False -> do
-                          let sess = Session cd $ Token $ T.unpack token
+                          let sess = Session cd $ Token $ T.unpack accessToken
 
                           userResult <- try $ mmGetUser UserMe sess
                           writeBChan respChan $ case userResult of
@@ -206,6 +207,7 @@ loginWorker setLogger logMgr requestChan respChan = forever $ do
                                   LoginResult $ AttemptSucceeded connInfo cd sess user mbTeam
                       True -> do
                           let login = Login { username = connInfo^.ciUsername
+                                            , token    = connInfo^.ciToken
                                             , password = connInfo^.ciPassword
                                             }
 
@@ -415,6 +417,7 @@ mkForm =
                , (above "Provide a username and password:" .
                   label "Username:")     @@= editTextField ciUsername Username (Just 1)
                , label "Password:"       @@= editPasswordField ciPassword Password
+               , label "OTP:"            @@= editTextField ciToken OtpToken (Just 1)
                , (above "Or provide a Session or Personal Access Token:" .
                   label "Access Token:") @@= editPasswordField ciAccessToken AccessToken
                ]
